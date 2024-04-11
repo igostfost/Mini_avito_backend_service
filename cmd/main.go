@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"github.com/go-redis/redis/v8"
 	"github.com/igostfost/avito_backend_trainee"
 	"github.com/igostfost/avito_backend_trainee/pkg/handler"
 	"github.com/igostfost/avito_backend_trainee/pkg/repository"
@@ -22,6 +24,20 @@ func main() {
 		logrus.Fatalf("error from load environment variables")
 	}
 
+	// Инициализация клиента Redis
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     viper.GetString("redis.addr"),
+		Password: viper.GetString("redis.password"),
+		DB:       viper.GetInt("redis.db"),
+	})
+
+	// Проверка соединения с Redis
+	ctx := context.Background()
+	_, err := redisClient.Ping(ctx).Result()
+	if err != nil {
+		logrus.Fatalf("error connecting to Redis: %s", err)
+	}
+
 	db, err := repository.NewPostgresDB(repository.Config{
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
@@ -35,8 +51,12 @@ func main() {
 		logrus.Printf("error init data base: %s", err)
 	}
 
-	repos := repository.NewRepository(db)
-	utilities := utils.NewUtils(repos)
+	// Создание экземпляра кеша Redis
+	//cache := repository.NewRedisCache(redisClient)
+
+	// Создание экземпляра репозитория с передачей клиента Redis
+	repos := repository.NewRepository(db, redisClient)
+	utilities := utils.NewUtils(repos, redisClient)
 	handlers := handler.NewHandler(utilities)
 	serv := new(avito_backend_trainee.Server)
 

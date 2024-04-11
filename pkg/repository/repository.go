@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+	"github.com/go-redis/redis/v8"
 	"github.com/igostfost/avito_backend_trainee/pkg/types"
 	"github.com/jmoiron/sqlx"
 )
@@ -19,13 +21,21 @@ type Banners interface {
 	UpdateBanner(inputUpdate types.BannerRequest) error
 }
 
+type Cache interface {
+	Set(ctx context.Context, key string, value interface{}) error
+	Get(ctx context.Context, key string) (interface{}, error)
+	Delete(ctx context.Context, key string) error
+}
+
 type Repository struct {
 	Authorization
 	Banners
+	Cache
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
+func NewRepository(db *sqlx.DB, redisClient *redis.Client) *Repository {
 	return &Repository{
 		Authorization: NewAuthPostgres(db),
-		Banners:       NewBannersPostgres(db)}
+		Banners:       NewBannersPostgres(db),
+		Cache:         NewRedisCache(redisClient)}
 }

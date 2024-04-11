@@ -67,7 +67,7 @@ func (r *BannersPostgres) insertBannerTag(tx *sqlx.Tx, bannerID, tagID int) erro
 
 func (r *BannersPostgres) GetBanner(featureID, tagID, limit, offset int) ([]types.BannerResponse, error) {
 	var banners []types.BannerResponse
-	query := fmt.Sprintf("SELECT b.banner_id, b.feature_id, b.title, b.text, b.url, b.is_active, b.created_at, b.updated_at FROM %s b", bannersTable)
+	query := fmt.Sprintf("SELECT b.banner_id, b.feature_id, b.title, b.text, b.url, b.is_active FROM %s b", bannersTable)
 
 	// Добавляем условия фильтрации по feature_id и tag_id
 	var conditions []string
@@ -99,9 +99,27 @@ func (r *BannersPostgres) GetBanner(featureID, tagID, limit, offset int) ([]type
 		if err := rows.Scan(&banner.BannerId, &banner.FeatureId, &banner.Content.Title, &banner.Content.Text, &banner.Content.Url, &banner.IsActive); err != nil {
 			return nil, err
 		}
-		banner.TagIds = tagID
+
+		// Запрос для тегов для каждого банера
+		tagsQuery := fmt.Sprintf("SELECT tag_id FROM %s WHERE banner_id = $1", tagsTable)
+		rowsTags, err := r.db.Queryx(tagsQuery, banner.BannerId)
+		if err != nil {
+			return nil, err
+		}
+		defer rowsTags.Close()
+
+		// Добавляем теги
+		for rowsTags.Next() {
+			var tagID int
+			if err := rowsTags.Scan(&tagID); err != nil {
+				return nil, err
+			}
+			banner.TagIds = append(banner.TagIds, tagID)
+		}
+
 		banners = append(banners, banner)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -201,6 +219,5 @@ func (r *BannersPostgres) UpdateBanner(updateInput types.BannerRequest) error {
 		return err
 	}
 
-	//fmt.Print("IN UpdateBanner")
 	return nil
 }
