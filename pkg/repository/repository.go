@@ -16,6 +16,7 @@ type Banners interface {
 	GetBanner(featureID, tagID, limit, offset int) ([]types.BannerResponse, error)
 	GetUserBanner(featureID, tagID int) (types.Content, error)
 	DeleteBanner(bannerId int) error
+	UpdateBanner(inputUpdate types.BannerRequest) error
 }
 
 type Repository struct {

@@ -93,7 +93,27 @@ func (h *Handler) UpdateBannerHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, bannerId)
+	var inputUpdate types.BannerRequest
+	if err := c.BindJSON(&inputUpdate); err != nil {
+		NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
+		return
+	}
+	inputUpdate.BannerId = bannerId
+
+	err = h.utils.UpdateBanner(inputUpdate)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			NewErrorResponse(c, http.StatusNotFound, "Баннер не найден")
+		default:
+			NewErrorResponse(c, http.StatusInternalServerError, "Внутренняя ошибка сервера")
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, "OK")
+
+	// c.JSON(http.StatusOK, inputUpdate)
 }
 
 func (h *Handler) DeleteBannerHandler(c *gin.Context) {

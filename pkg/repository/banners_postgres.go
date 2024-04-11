@@ -96,7 +96,7 @@ func (r *BannersPostgres) GetBanner(featureID, tagID, limit, offset int) ([]type
 	// Итерируемся по результатам и формируем список баннеров
 	for rows.Next() {
 		var banner types.BannerResponse
-		if err := rows.Scan(&banner.BannerId, &banner.FeatureId, &banner.Content.Title, &banner.Content.Text, &banner.Content.Url, &banner.IsActive, &banner.CreatedAt, &banner.UpdatedAt); err != nil {
+		if err := rows.Scan(&banner.BannerId, &banner.FeatureId, &banner.Content.Title, &banner.Content.Text, &banner.Content.Url, &banner.IsActive); err != nil {
 			return nil, err
 		}
 		banner.TagIds = tagID
@@ -151,5 +151,56 @@ func (r *BannersPostgres) DeleteBanner(bannerId int) error {
 		return sql.ErrNoRows
 	}
 
+	return nil
+}
+
+func (r *BannersPostgres) UpdateBanner(updateInput types.BannerRequest) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		fmt.Println("********")
+		return err
+	}
+	defer tx.Rollback()
+
+	query := fmt.Sprintf("UPDATE %s SET feature_id = $1,title = $2, text = $3, url = $4,is_active = $5 "+
+		"WHERE banner_id = $6", bannersTable)
+	res, err := tx.Exec(query, updateInput.FeatureId, updateInput.Content.Title, updateInput.Content.Text, updateInput.Content.Url, updateInput.IsActive, updateInput.BannerId)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		fmt.Println("1111111111")
+		return err
+	}
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	// Удаляем все теги баннера
+	_, err = tx.Exec("DELETE FROM banner_tags WHERE banner_id = $1", updateInput.BannerId)
+	if err != nil {
+		fmt.Println("2222222222")
+		return err
+	}
+
+	// Вставляем новые теги баннера
+	for _, tagID := range updateInput.TagIds {
+		_, err = tx.Exec("INSERT INTO banner_tags (banner_id, tag_id) VALUES ($1, $2)", updateInput.BannerId, tagID)
+		if err != nil {
+			fmt.Println("333333333")
+			return err
+		}
+	}
+
+	// Если все прошло успешно, фиксируем транзакцию
+	if err := tx.Commit(); err != nil {
+		fmt.Println("4444444")
+		return err
+	}
+
+	//fmt.Print("IN UpdateBanner")
 	return nil
 }

@@ -28,3 +28,7 @@ func (u *BannersUtils) GetUserBanner(featureID, tagID int) (types.Content, error
 func (u *BannersUtils) DeleteBanner(bannerId int) error {
 	return u.repo.DeleteBanner(bannerId)
 }
+
+func (u *BannersUtils) UpdateBanner(banner types.BannerRequest) error {
+	return u.repo.UpdateBanner(banner)
+}
