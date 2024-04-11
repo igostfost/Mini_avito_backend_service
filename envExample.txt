@@ -1,0 +1,3 @@
+DB_PASSWORD=myDbPassword
+SALT=saltForHash
+SIGN_TOKEN_KEY=verySecretSignKey
