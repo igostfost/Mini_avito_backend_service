@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
+	"time"
 )
 
 type RedisCache struct {
@@ -14,7 +15,7 @@ func NewRedisCache(client *redis.Client) *RedisCache {
 }
 
 func (r *RedisCache) Set(ctx context.Context, key string, value interface{}) error {
-	return r.client.Set(ctx, key, value, 0).Err()
+	return r.client.Set(ctx, key, value, 5*time.Minute).Err()
 }
 
 func (r *RedisCache) Get(ctx context.Context, key string) (interface{}, error) {
