@@ -11,6 +11,20 @@ import (
 	"strconv"
 )
 
+// CreateBannerHandler создает новый баннер.
+// @Summary Create Banner
+// @Security ApiKeyAuth
+// @Tags Banners
+// @Description create Banner
+// @ID create-banner
+// @Accept  json
+// @Produce  json
+// @Param input body types.BannerRequest true "banner info"
+// @Success 200 {integer} integer 1
+// @Failure 400,403 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /banner [post]
 func (h *Handler) CreateBannerHandler(c *gin.Context) {
 
 	isAdmin, ok := c.Get("isAdmin")
@@ -35,7 +49,22 @@ func (h *Handler) CreateBannerHandler(c *gin.Context) {
 
 }
 
+// GetBannersHandler возвращает список баннеров.
+// @Summary Get Banners
+// @Security ApiKeyAuth
+// @Tags Banners
+// @Description Получение списка баннеров
+// @ID get-banners
+// @Accept json
+// @Produce json
+// @Param input query types.GetInputBanners true "Параметры запроса"
+// @Success 200 {array} types.BannerResponse "Список баннеров"
+// @Failure 400,403 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /banner [get]
 func (h *Handler) GetBannersHandler(c *gin.Context) {
+	var err error // Объявление переменной err здесь
 
 	isAdmin, ok := c.Get("isAdmin")
 	if !isAdmin.(bool) || !ok {
@@ -43,15 +72,46 @@ func (h *Handler) GetBannersHandler(c *gin.Context) {
 		return
 	}
 
-	var input types.GetInputBanners
-	if err := c.BindJSON(&input); err != nil {
-		NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
-		return
+	featureIdStr := c.Query("feature_id")
+	featureId := 0
+	if featureIdStr != "" {
+		featureId, err = strconv.Atoi(featureIdStr) // Присваивание значений err здесь
+		if h.handleConversionError(c, err) {
+			return
+		}
 	}
 
-	banners, err := h.utils.GetBanner(input.FeatureId, input.TagIds, input.Limit, input.Offset)
+	tagIdStr := c.Query("tag_id")
+	tagId := 0
+	if tagIdStr != "" {
+		tagId, err = strconv.Atoi(tagIdStr) // Присваивание значений err здесь
+		if h.handleConversionError(c, err) {
+			return
+		}
+	}
+
+	limitStr := c.Query("limit")
+	limit := 0
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr) // Присваивание значений err здесь
+		if h.handleConversionError(c, err) {
+			return
+		}
+	}
+
+	offsetStr := c.Query("offset")
+	offset := 0
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr) // Присваивание значений err здесь
+		if h.handleConversionError(c, err) {
+			return
+		}
+	}
+
+	banners, err := h.utils.GetBanner(featureId, tagId, limit, offset)
 	if err != nil {
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
 	}
 	if banners == nil {
 		NewErrorResponse(c, http.StatusNotFound, "Баннер не найден")
@@ -61,6 +121,15 @@ func (h *Handler) GetBannersHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, banners)
 }
 
+func (h *Handler) handleConversionError(c *gin.Context, err error) bool {
+	if err != nil {
+		NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
+		return true
+	}
+	return false
+}
+
+// GetUserBannerFromDB возвращает баннер пользователя напрямую из бд с актуальной информацией
 func (h *Handler) GetUserBannerFromDB(c *gin.Context, TagId, FeatureId int) {
 
 	userBanner, err := h.utils.GetUserBanner(FeatureId, TagId)
@@ -74,34 +143,50 @@ func (h *Handler) GetUserBannerFromDB(c *gin.Context, TagId, FeatureId int) {
 		return
 	}
 
-	fmt.Println("получили данные напрямую из дб")
 	c.JSON(http.StatusOK, userBanner)
 }
 
+// GetUserBannerHandler возвращает баннер пользователя.
+// @Summary Get User Banner
+// @Security ApiKeyAuth
+// @Tags Banners
+// @Description Получение баннера пользователя
+// @ID get-user-banner
+// @Accept json
+// @Produce json
+// @Param input query types.GetInputUserBanners true "Параметры запроса"
+// @Success 200 {object} types.Content "Баннер пользователя"
+// @Failure 400 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /user_banner [get]
 func (h *Handler) GetUserBannerHandler(c *gin.Context) {
-	// Привязываем параметры из URL запроса
-	var input types.GetInputBanners
-	if err := c.BindJSON(&input); err != nil {
+
+	tagId, err := strconv.Atoi(c.Query("tag_id"))
+	if err != nil {
 		NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
-		return
 	}
-	if input.UseLastRevision {
-		h.GetUserBannerFromDB(c, input.TagIds, input.FeatureId)
-		// fmt.Println("Ушли получать напрямую из бд")
+	featureId, err := strconv.Atoi(c.Query("feature_id"))
+	if err != nil {
+		NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
+	}
+	useLastRevision, err := strconv.ParseBool(c.Query("use_last_revision"))
+	if err != nil {
+		NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
+	}
+
+	if useLastRevision {
+		h.GetUserBannerFromDB(c, tagId, featureId)
 		return
 	}
 
-	// Формируем ключ для кеша Redis
-	cacheKey := fmt.Sprintf("user_banner:%d:%d", input.FeatureId, input.TagIds)
+	cacheKey := fmt.Sprintf("user_banner:%d:%d", featureId, tagId)
 
-	// Проверяем, есть ли данные в кеше Redis
 	cachedData, err := h.utils.Get(c, cacheKey)
 	if err == nil {
-		// Данные найдены в кеше, возвращаем их пользователю
 		var userBanner types.Content
 		cachedDataString, ok := cachedData.(string)
 		if !ok {
-			// Обработка ошибки, если cachedData не является строкой
 			NewErrorResponse(c, http.StatusInternalServerError, "Ошибка при получении данных из кеша")
 			return
 		}
@@ -109,25 +194,21 @@ func (h *Handler) GetUserBannerHandler(c *gin.Context) {
 			NewErrorResponse(c, http.StatusInternalServerError, "Ошибка при разборе данных из кеша")
 			return
 		}
-		// fmt.Println("Считали из кеша")
 		c.JSON(http.StatusOK, userBanner)
 		return
 	}
 
-	// Данных нет в кеше, получаем их из базы данных
-	userBanner, err := h.utils.GetUserBanner(input.FeatureId, input.TagIds)
-	// fmt.Println("Данных нет в кеше, получаем их из базы данных")
+	userBanner, err := h.utils.GetUserBanner(featureId, tagId)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			NewErrorResponse(c, http.StatusNotFound, "Баннер не найден 1")
+			NewErrorResponse(c, http.StatusNotFound, "Баннер не найден")
 		default:
 			NewErrorResponse(c, http.StatusInternalServerError, "Внутренняя ошибка сервера")
 		}
 		return
 	}
 
-	// Сохраняем данные в кеш Redis
 	jsonData, err := json.Marshal(userBanner)
 	if err != nil {
 		NewErrorResponse(c, http.StatusInternalServerError, "Ошибка при сериализации данных")
@@ -138,12 +219,25 @@ func (h *Handler) GetUserBannerHandler(c *gin.Context) {
 		NewErrorResponse(c, http.StatusInternalServerError, "Ошибка при сохранении данных в кеш")
 		return
 	}
-	// fmt.Println("Сохранили данные в кеш")
 
-	// Возвращаем данные пользователю
 	c.JSON(http.StatusOK, userBanner)
 }
 
+// UpdateBannerHandler обновляет информацию о баннере.
+// @Summary Update Banner
+// @Security ApiKeyAuth
+// @Tags Banners
+// @Description Обновление информации о баннере
+// @ID update-banner
+// @Accept json
+// @Produce json
+// @Param id path int true "Идентификатор баннера"
+// @Param input body types.BannerRequest true "Информация о баннере"
+// @Success 200 {string} string "OK"
+// @Failure 400,403 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /banner/{id} [patch]
 func (h *Handler) UpdateBannerHandler(c *gin.Context) {
 	isAdmin, ok := c.Get("isAdmin")
 	if !isAdmin.(bool) || !ok {
@@ -177,9 +271,20 @@ func (h *Handler) UpdateBannerHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, "OK")
 
-	// c.JSON(http.StatusOK, inputUpdate)
 }
 
+// DeleteBannerHandler удаляет баннер.
+// @Summary Delete Banner
+// @Security ApiKeyAuth
+// @Tags Banners
+// @Description Удаление баннера
+// @ID delete-banner
+// @Param id path int true "Идентификатор баннера"
+// @Success 204 {string} string "Баннер успешно удален"
+// @Failure 400,403 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /banner/{id} [delete]
 func (h *Handler) DeleteBannerHandler(c *gin.Context) {
 	isAdmin, ok := c.Get("isAdmin")
 	if !isAdmin.(bool) || !ok {
