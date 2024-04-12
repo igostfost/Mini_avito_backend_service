@@ -23,9 +23,14 @@ type Content struct {
 }
 
 type GetInputBanners struct {
+	FeatureId int `json:"feature_id" db:"feature_id"`
+	TagIds    int `json:"tag_id" db:"tags_id"`
+	Limit     int `json:"limit"`
+	Offset    int `json:"offset"`
+}
+
+type GetInputUserBanners struct {
 	FeatureId       int  `json:"feature_id" db:"feature_id"`
 	TagIds          int  `json:"tag_id" db:"tags_id"`
-	Limit           int  `json:"limit"`
-	Offset          int  `json:"offset"`
 	UseLastRevision bool `json:"use_last_revision"`
 }

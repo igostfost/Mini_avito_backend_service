@@ -6,6 +6,18 @@ import (
 	"net/http"
 )
 
+// @Summary Регистрация
+// @Tags auth
+// @Description Создание учетной записи пользователя
+// @ID create-user-account
+// @Accept json
+// @Produce json
+// @Param input body types.User true "Информация об аккаунте"
+// @Success 200 {integer} integer 1
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /auth/sign-up [post]
 func (h *Handler) signUp(c *gin.Context) {
 	var input types.User
 
@@ -24,6 +36,18 @@ func (h *Handler) signUp(c *gin.Context) {
 	})
 }
 
+// @Summary Регистрация администратора
+// @Tags auth
+// @Description Создание учетной записи администратора
+// @ID create-admin-account
+// @Accept json
+// @Produce json
+// @Param input body types.User true "Информация об аккаунте"
+// @Success 200 {integer} integer 1
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /auth/sign-up/admin [post]
 func (h *Handler) signUpAdmin(c *gin.Context) {
 	var input types.User
 
@@ -47,6 +71,17 @@ type signInInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// @Summary Вход
+// @Tags auth
+// @Description Авторизация пользователя
+// @ID login-user
+// @Accept json
+// @Produce json
+// @Param input body signInInput true "Учетные данные"
+// @Success 200 {string} string "Токен"
+// @Failure 400,404 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /auth/sign-in [post]
 func (h *Handler) signIn(c *gin.Context) {
 	var input signInInput
 
@@ -66,6 +101,17 @@ func (h *Handler) signIn(c *gin.Context) {
 	})
 }
 
+// @Summary Вход администратора
+// @Tags auth
+// @Description Авторизация администратора
+// @ID login-admin
+// @Accept json
+// @Produce json
+// @Param input body signInInput true "Учетные данные"
+// @Success 200 {string} string "Токен"
+// @Failure 400,404 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /auth/sign-in/admin [post]
 func (h *Handler) signInAdmin(c *gin.Context) {
 	var input signInInput
 
