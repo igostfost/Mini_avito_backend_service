@@ -14,6 +14,17 @@ import (
 	"os"
 )
 
+// @title Banners Show App API
+// @version 1.0
+// @description API Server for BannersShow Application for avito backend trainee
+
+// @host localhost:8000
+// @BasePath /
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 func main() {
 
 	if err := initConfig(); err != nil {
@@ -24,7 +35,6 @@ func main() {
 		logrus.Fatalf("error from load environment variables")
 	}
 
-	// Инициализация клиента Redis
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     viper.GetString("redis.addr"),
 		Password: viper.GetString("redis.password"),
@@ -51,18 +61,17 @@ func main() {
 		logrus.Printf("error init data base: %s", err)
 	}
 
-	// Создание экземпляра кеша Redis
-	//cache := repository.NewRedisCache(redisClient)
-
-	// Создание экземпляра репозитория с передачей клиента Redis
 	repos := repository.NewRepository(db, redisClient)
 	utilities := utils.NewUtils(repos, redisClient)
 	handlers := handler.NewHandler(utilities)
 	serv := new(avito_backend_trainee.Server)
 
 	if err := serv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
-		logrus.Fatalf("error running http server: %s", err)
+		logrus.Fatalf("error running http server: %s", err.Error())
 	}
+
+	logrus.Printf("Server started on port %s", viper.GetString("port"))
+
 }
 
 func initConfig() error {
