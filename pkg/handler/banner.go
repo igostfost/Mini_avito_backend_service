@@ -165,15 +165,28 @@ func (h *Handler) GetUserBannerHandler(c *gin.Context) {
 	tagId, err := strconv.Atoi(c.Query("tag_id"))
 	if err != nil {
 		NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
+		return
 	}
 	featureId, err := strconv.Atoi(c.Query("feature_id"))
 	if err != nil {
 		NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
+		return
 	}
-	useLastRevision, err := strconv.ParseBool(c.Query("use_last_revision"))
-	if err != nil {
-		NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
+
+	useLastRevisionStr := c.Query("use_last_revision")
+	useLastRevision := false
+	if useLastRevisionStr != "" {
+		useLastRevision, err = strconv.ParseBool(useLastRevisionStr)
+		if h.handleConversionError(c, err) {
+			return
+		}
 	}
+
+	//useLastRevision, err := strconv.ParseBool(c.Query("use_last_revision"))
+	//if err != nil {
+	//	NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
+	//	return
+	//}
 
 	if useLastRevision {
 		h.GetUserBannerFromDB(c, tagId, featureId)
