@@ -1,0 +1,30 @@
+version: '3,8'
+
+services:
+  avito-app:
+    build: ./
+    command: ./avito_backend_trainee
+    ports:
+        - "8000:8000"
+    depends_on:
+      - db
+      - cache
+    environment:
+      - DB_PASSWORD=qwerty
+
+  db:
+    image: postgres:latest
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+    ports:
+      - 5436:5432
+
+  cache:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PORT=6379
+
