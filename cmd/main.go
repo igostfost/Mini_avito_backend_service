@@ -2,16 +2,19 @@ package main
 
 import (
 	"context"
+	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/igostfost/avito_backend_trainee"
 	"github.com/igostfost/avito_backend_trainee/pkg/handler"
 	"github.com/igostfost/avito_backend_trainee/pkg/repository"
 	"github.com/igostfost/avito_backend_trainee/pkg/utils"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
+	"time"
 )
 
 // @title Banners Show App API
@@ -35,18 +38,11 @@ func main() {
 		logrus.Fatalf("error from load environment variables")
 	}
 
-	db, err := repository.NewPostgresDB(repository.Config{
-		Host:     viper.GetString("db.host"),
-		Port:     viper.GetString("db.port"),
-		Username: viper.GetString("db.username"),
-		DBName:   viper.GetString("db.dbname"),
-		SSLMode:  viper.GetString("db.sslmode"),
-		Password: os.Getenv("DB_PASSWORD"),
-	})
-
+	db, err := connectToDB()
 	if err != nil {
 		logrus.Printf("error init data base: %s", err)
 	}
+	defer db.Close()
 
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("REDIS_ADDR"),
@@ -77,4 +73,31 @@ func initConfig() error {
 	viper.AddConfigPath("configs")
 	viper.SetConfigName("config")
 	return viper.ReadInConfig()
+}
+
+func connectToDB() (*sqlx.DB, error) {
+	cfg := repository.Config{
+		Host:     viper.GetString("db.host"),
+		Port:     viper.GetString("db.port"),
+		Username: viper.GetString("db.username"),
+		DBName:   viper.GetString("db.dbname"),
+		SSLMode:  viper.GetString("db.sslmode"),
+		Password: os.Getenv("DB_PASSWORD"),
+	}
+
+	maxAttempts := 5
+	attempt := 1
+	var db *sqlx.DB
+	var err error
+	for attempt <= maxAttempts {
+		db, err = repository.NewPostgresDB(cfg)
+		if err == nil {
+			return db, nil
+		}
+
+		time.Sleep(3 * time.Second)
+		attempt++
+	}
+
+	return nil, errors.New("failed to connect to the database after multiple attempts")
 }
