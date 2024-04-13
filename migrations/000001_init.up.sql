@@ -7,7 +7,7 @@ SELECT generate_series(1, 998);
 
 CREATE TABLE banners (
                          banner_id SERIAL PRIMARY KEY,
-                         feature_id INTEGER NOT NULL,
+                         feature_id INTEGER NOT NULL UNIQUE,
                          title VARCHAR(255) NOT NULL,
                          text TEXT NOT NULL,
                          url VARCHAR(255) NOT NULL,
