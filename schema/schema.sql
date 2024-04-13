@@ -1,11 +1,6 @@
-CREATE TABLE features (
-                          feature_id SERIAL PRIMARY KEY
-);
-INSERT INTO tags (feature_id)
-SELECT generate_series(1, 999);
 
 CREATE TABLE tags (
-                      tag_id SERIAL PRIMARY KEY
+    tag_id SERIAL PRIMARY KEY
 );
 INSERT INTO tags (tag_id)
 SELECT generate_series(1, 999);
@@ -19,7 +14,6 @@ CREATE TABLE banners (
                          is_active BOOLEAN NOT NULL,
                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,
-                         FOREIGN KEY (feature_id) REFERENCES features(feature_id)
 );
 
 CREATE TABLE banner_tags (
