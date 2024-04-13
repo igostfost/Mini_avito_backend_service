@@ -256,7 +256,7 @@ const docTemplate = `{
                 "tags": [
                     "Banners"
                 ],
-                "summary": "Get Banners",
+                "summary": "Получение списка всех баннеров. Доступно только админу",
                 "operationId": "get-banners",
                 "parameters": [
                     {
@@ -332,7 +332,7 @@ const docTemplate = `{
                 "tags": [
                     "Banners"
                 ],
-                "summary": "Create Banner",
+                "summary": "Создание нового баннера",
                 "operationId": "create-banner",
                 "parameters": [
                     {
@@ -390,7 +390,7 @@ const docTemplate = `{
                 "tags": [
                     "Banners"
                 ],
-                "summary": "Delete Banner",
+                "summary": "Удаление баннера. Доступно только админу",
                 "operationId": "delete-banner",
                 "parameters": [
                     {
@@ -450,7 +450,7 @@ const docTemplate = `{
                 "tags": [
                     "Banners"
                 ],
-                "summary": "Update Banner",
+                "summary": "Обновление баннера. Доступно только админу",
                 "operationId": "update-banner",
                 "parameters": [
                     {
@@ -521,7 +521,7 @@ const docTemplate = `{
                 "tags": [
                     "Banners"
                 ],
-                "summary": "Get User Banner",
+                "summary": "Получение баннера пользователя",
                 "operationId": "get-user-banner",
                 "parameters": [
                     {

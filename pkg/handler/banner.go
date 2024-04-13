@@ -11,8 +11,8 @@ import (
 	"strconv"
 )
 
-// CreateBannerHandler создает новый баннер.
-// @Summary Create Banner
+// CreateBannerHandler создает новый баннер. Доступно только админу
+// @Summary Создание нового баннера
 // @Security ApiKeyAuth
 // @Tags Banners
 // @Description create Banner
@@ -50,7 +50,7 @@ func (h *Handler) CreateBannerHandler(c *gin.Context) {
 }
 
 // GetBannersHandler возвращает список баннеров.
-// @Summary Get Banners
+// @Summary Получение списка всех баннеров. Доступно только админу
 // @Security ApiKeyAuth
 // @Tags Banners
 // @Description Получение списка баннеров
@@ -75,7 +75,7 @@ func (h *Handler) GetBannersHandler(c *gin.Context) {
 	featureIdStr := c.Query("feature_id")
 	featureId := 0
 	if featureIdStr != "" {
-		featureId, err = strconv.Atoi(featureIdStr) // Присваивание значений err здесь
+		featureId, err = strconv.Atoi(featureIdStr)
 		if h.handleConversionError(c, err) {
 			return
 		}
@@ -84,7 +84,7 @@ func (h *Handler) GetBannersHandler(c *gin.Context) {
 	tagIdStr := c.Query("tag_id")
 	tagId := 0
 	if tagIdStr != "" {
-		tagId, err = strconv.Atoi(tagIdStr) // Присваивание значений err здесь
+		tagId, err = strconv.Atoi(tagIdStr)
 		if h.handleConversionError(c, err) {
 			return
 		}
@@ -93,7 +93,7 @@ func (h *Handler) GetBannersHandler(c *gin.Context) {
 	limitStr := c.Query("limit")
 	limit := 0
 	if limitStr != "" {
-		limit, err = strconv.Atoi(limitStr) // Присваивание значений err здесь
+		limit, err = strconv.Atoi(limitStr)
 		if h.handleConversionError(c, err) {
 			return
 		}
@@ -102,7 +102,7 @@ func (h *Handler) GetBannersHandler(c *gin.Context) {
 	offsetStr := c.Query("offset")
 	offset := 0
 	if offsetStr != "" {
-		offset, err = strconv.Atoi(offsetStr) // Присваивание значений err здесь
+		offset, err = strconv.Atoi(offsetStr)
 		if h.handleConversionError(c, err) {
 			return
 		}
@@ -147,7 +147,7 @@ func (h *Handler) GetUserBannerFromDB(c *gin.Context, TagId, FeatureId int) {
 }
 
 // GetUserBannerHandler возвращает баннер пользователя.
-// @Summary Get User Banner
+// @Summary Получение баннера пользователя
 // @Security ApiKeyAuth
 // @Tags Banners
 // @Description Получение баннера пользователя
@@ -181,12 +181,6 @@ func (h *Handler) GetUserBannerHandler(c *gin.Context) {
 			return
 		}
 	}
-
-	//useLastRevision, err := strconv.ParseBool(c.Query("use_last_revision"))
-	//if err != nil {
-	//	NewErrorResponse(c, http.StatusBadRequest, "Некорректные данные")
-	//	return
-	//}
 
 	if useLastRevision {
 		h.GetUserBannerFromDB(c, tagId, featureId)
@@ -237,7 +231,7 @@ func (h *Handler) GetUserBannerHandler(c *gin.Context) {
 }
 
 // UpdateBannerHandler обновляет информацию о баннере.
-// @Summary Update Banner
+// @Summary Обновление баннера. Доступно только админу
 // @Security ApiKeyAuth
 // @Tags Banners
 // @Description Обновление информации о баннере
@@ -287,7 +281,7 @@ func (h *Handler) UpdateBannerHandler(c *gin.Context) {
 }
 
 // DeleteBannerHandler удаляет баннер.
-// @Summary Delete Banner
+// @Summary Удаление баннера. Доступно только админу
 // @Security ApiKeyAuth
 // @Tags Banners
 // @Description Удаление баннера

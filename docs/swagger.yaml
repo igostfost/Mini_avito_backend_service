@@ -267,7 +267,7 @@ paths:
             $ref: '#/definitions/handler.errorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Get Banners
+      summary: Получение списка всех баннеров. Доступно только админу
       tags:
       - Banners
     post:
@@ -307,7 +307,7 @@ paths:
             $ref: '#/definitions/handler.errorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Create Banner
+      summary: Создание нового баннера
       tags:
       - Banners
   /banner/{id}:
@@ -343,7 +343,7 @@ paths:
             $ref: '#/definitions/handler.errorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Delete Banner
+      summary: Удаление баннера. Доступно только админу
       tags:
       - Banners
     patch:
@@ -388,7 +388,7 @@ paths:
             $ref: '#/definitions/handler.errorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Update Banner
+      summary: Обновление баннера. Доступно только админу
       tags:
       - Banners
   /user_banner:
@@ -428,7 +428,7 @@ paths:
             $ref: '#/definitions/handler.errorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Get User Banner
+      summary: Получение баннера пользователя
       tags:
       - Banners
 securityDefinitions:
