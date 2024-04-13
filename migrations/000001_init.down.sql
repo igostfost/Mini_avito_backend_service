@@ -1,4 +1,3 @@
-
 DROP TRIGGER IF EXISTS update_banner_updated_at_trigger ON banners;
 
 

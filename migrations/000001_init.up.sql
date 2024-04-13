@@ -1,4 +1,3 @@
-
 CREATE TABLE tags (
                       tag_id SERIAL PRIMARY KEY
 );
