@@ -35,30 +35,29 @@ func main() {
 		logrus.Fatalf("error from load environment variables")
 	}
 
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     viper.GetString("redis.addr"),
-		Password: viper.GetString("redis.password"),
-		DB:       viper.GetInt("redis.db"),
-	})
-
-	// Проверка соединения с Redis
-	ctx := context.Background()
-	_, err := redisClient.Ping(ctx).Result()
-	if err != nil {
-		logrus.Fatalf("error connecting to Redis: %s", err)
-	}
-
 	db, err := repository.NewPostgresDB(repository.Config{
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
 		Username: viper.GetString("db.username"),
-		Password: os.Getenv("DB_PASSWORD"),
 		DBName:   viper.GetString("db.dbname"),
-		SSLMode:  viper.GetString("db.SSLMode"),
+		SSLMode:  viper.GetString("db.sslmode"),
+		Password: os.Getenv("DB_PASSWORD"),
 	})
 
 	if err != nil {
 		logrus.Printf("error init data base: %s", err)
+	}
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_ADDR"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       viper.GetInt("redis.db"),
+	})
+
+	ctx := context.Background()
+	_, err = redisClient.Ping(ctx).Result()
+	if err != nil {
+		logrus.Fatalf("error connecting to Redis: %s", err)
 	}
 
 	repos := repository.NewRepository(db, redisClient)
