@@ -51,8 +51,6 @@ func (r *BannersPostgres) insertBanner(tx *sqlx.Tx, banner types.BannerRequest) 
 
 	err := tx.QueryRow(query, banner.FeatureId, banner.Content.Title, banner.Content.Text, banner.Content.Url, banner.IsActive).Scan(&bannerID)
 	if err != nil {
-
-		fmt.Println("QQQQQQQ", err)
 		return 0, err
 	}
 	return bannerID, nil
@@ -64,7 +62,6 @@ func (r *BannersPostgres) insertBannerTag(tx *sqlx.Tx, bannerID, tagID int) erro
 	_, err := tx.Exec(query, bannerID, tagID)
 	if err != nil {
 
-		fmt.Println("XXXXXXXX")
 		return err
 	}
 	return nil
