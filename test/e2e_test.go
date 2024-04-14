@@ -172,6 +172,90 @@ func TestPostBanner(t *testing.T) {
 
 }
 
+func TestPatchBanner(t *testing.T) {
+
+	// ------ AUTH START -------
+	signInURL := "http://localhost:8000/auth/sign-in/admin"
+	inputData := map[string]string{
+		"username": "testAdmin",
+		"password": "testPassword",
+	}
+	jsonData, err := json.Marshal(inputData)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON data: %v", err)
+	}
+
+	resp, err := http.Post(signInURL, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		t.Fatalf("Failed to send POST request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Unexpected status code: %d", resp.StatusCode)
+	}
+
+	var responseToken struct {
+		Token string `json:"token"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&responseToken)
+	if err != nil {
+		t.Fatalf("Failed to decode JSON response: %v", err)
+	}
+	token := responseToken.Token
+	// ------ AUTH END -------
+
+	// ------ PATCH BANNER START -------
+	inputBanner := &types.BannerRequest{
+		TagIds:    []int{1},
+		FeatureId: 1,
+		Content: types.Content{
+			Title: "Test BannerUPDATE",
+			Text:  "Test content",
+			Url:   "http//example.com",
+		},
+		IsActive: true,
+	}
+	jsonData, err = json.Marshal(inputBanner)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON data: %v", err)
+	}
+
+	req, err := http.NewRequest("PATCH", "http://localhost:8000/banner/1", bytes.NewBuffer(jsonData))
+	if err != nil {
+		t.Fatalf("Failed to create POST request: %v", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Failed to send POST request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Unexpected status code: %d", resp.StatusCode)
+	}
+
+	type ResponseData struct {
+		Description string `json:"description"`
+	}
+
+	var responseData string
+	err = json.NewDecoder(resp.Body).Decode(&responseData)
+	if err != nil {
+		t.Fatalf("Failed to decode JSON response: %v", err)
+	}
+
+	if responseData != "OK" {
+		t.Fatalf("Unexpected response: %s", responseData)
+	}
+	// ------ POST BANNER END -------
+
+	fmt.Println("TestPatchBanner - SUCCESS")
+}
+
 func TestSignUpUser(t *testing.T) {
 	serverURL := "http://localhost:8000/auth/sign-up"
 
@@ -271,16 +355,71 @@ func TestGetUserBanner(t *testing.T) {
 	}
 
 	expectedBanner := types.Content{
-		Title: "Test Banner",
+		Title: "Test BannerUPDATE",
 		Text:  "Test content",
-		Url:   "http://example.com",
+		Url:   "http//example.com",
 	}
 
 	if banner != expectedBanner {
 		t.Fatalf("Unexpected banner data: %+v", banner)
 	}
-	// ------ GET USER BANNER START -------
+	// ------ GET USER BANNER END -------
 
 	fmt.Println("TestSignInUser - SUCCESS")
 	fmt.Println("TestGetUserBanner - SUCCESS")
+}
+
+func TestDeleteBanner(t *testing.T) {
+
+	// ------ AUTH START -------
+	signInURL := "http://localhost:8000/auth/sign-in/admin"
+	inputData := map[string]string{
+		"username": "testAdmin",
+		"password": "testPassword",
+	}
+	jsonData, err := json.Marshal(inputData)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON data: %v", err)
+	}
+
+	resp, err := http.Post(signInURL, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		t.Fatalf("Failed to send POST request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Unexpected status code: %d", resp.StatusCode)
+	}
+
+	var responseToken struct {
+		Token string `json:"token"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&responseToken)
+	if err != nil {
+		t.Fatalf("Failed to decode JSON response: %v", err)
+	}
+	token := responseToken.Token
+	// ------ AUTH END -------
+
+	// ------ DELETE BANNER START -------
+	req, err := http.NewRequest("DELETE", "http://localhost:8000/banner/1", nil)
+	if err != nil {
+		t.Fatalf("Failed to create DELETE request: %v", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Failed to send DELETE request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("Unexpected status code: %d", resp.StatusCode)
+	}
+	// ------ DELETE BANNER END -------
+
+	fmt.Println("TestPatchBanner - SUCCESS")
 }
