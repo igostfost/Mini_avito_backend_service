@@ -25,7 +25,6 @@ func TestAuth(t *testing.T) {
 		{"GET", "/banner", "", nil, http.StatusUnauthorized},
 		{"DELETE", "/banner/1", "", nil, http.StatusUnauthorized},
 		{"PATCH", "/banner/1", "", nil, http.StatusUnauthorized},
-		// Добавьте другие эндпоинты для проверки здесь
 	}
 
 	for _, endpoint := range endpoints {
