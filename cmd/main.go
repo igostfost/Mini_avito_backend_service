@@ -9,7 +9,6 @@ import (
 	"github.com/igostfost/avito_backend_trainee/pkg/repository"
 	"github.com/igostfost/avito_backend_trainee/pkg/utils"
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -34,10 +33,6 @@ func main() {
 		logrus.Fatalf("Error from init configs: %s", err)
 	}
 
-	if err := godotenv.Load(); err != nil {
-		logrus.Fatalf("error from load environment variables")
-	}
-
 	db, err := connectToDB()
 	if err != nil {
 		logrus.Printf("error init data base: %s", err)
@@ -45,8 +40,8 @@ func main() {
 	defer db.Close()
 
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_ADDR"),
-		Password: os.Getenv("REDIS_PASSWORD"),
+		Addr:     viper.GetString("redis.addr"),
+		Password: viper.GetString("redis.pass"),
 		DB:       viper.GetInt("redis.db"),
 	})
 

@@ -6,3 +6,8 @@ db:
   port: "5432"
   dbname: "postgres"
   sslmode: "disable"
+
+redis:
+  addr: "cache:6379"
+  pass: ""
+

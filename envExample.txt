@@ -1,5 +1,0 @@
-SALT=saltForHash
-SIGN_TOKEN_KEY=verySecretSignKey
-REDIS_ADDR=localhost:6379
-REDIS_PASSWORD=
-REDIS_DB=
