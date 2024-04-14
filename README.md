@@ -38,7 +38,7 @@ make migrate
 make migrate_down
 ```
 - Для запуска тестов (Необходима самая 1 версия базы после миграции)
-Если вы что-то добавили в базу, необходимо сделать make_down и make migrate и затем:
+Если вы что-то добавили в базу, необходимо сделать make migrate_down и make migrate и затем:
 ```bash
 make tests
 ```
