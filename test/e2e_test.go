@@ -61,7 +61,6 @@ func TestAuth(t *testing.T) {
 func TestSignUpAdmin(t *testing.T) {
 	serverURL := "http://localhost:8000/auth/sign-up/admin"
 
-	// Подготавливаем данные для отправки в формате JSON
 	inputData := map[string]string{
 		"username": "testAdmin",
 		"password": "testPassword",
@@ -71,19 +70,16 @@ func TestSignUpAdmin(t *testing.T) {
 		t.Fatalf("Failed to marshal JSON data: %v", err)
 	}
 
-	// Отправляем POST-запрос на сервер
 	resp, err := http.Post(serverURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		t.Fatalf("Failed to send POST request: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// Проверяем статус код ответа
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Unexpected status code: %d", resp.StatusCode)
 	}
 
-	// Парсим JSON-ответ
 	var responseData struct {
 		ID      int `json:"id"`
 		IsAdmin int `json:"is_admin"`
@@ -93,7 +89,6 @@ func TestSignUpAdmin(t *testing.T) {
 		t.Fatalf("Failed to decode JSON response: %v", err)
 	}
 
-	// Печатаем ID пользователя
 	fmt.Println("TestSignUpAdmin -  SUCCESS")
 }
 
@@ -131,8 +126,6 @@ func TestPostBanner(t *testing.T) {
 	// ------ AUTH END -------
 
 	// ------ POST BANNER START -------
-
-	// Создаем JSON тело запроса для создания баннера
 	inputBanner := &types.BannerRequest{
 		TagIds:    []int{1},
 		FeatureId: 1,
@@ -148,16 +141,13 @@ func TestPostBanner(t *testing.T) {
 		t.Fatalf("Failed to marshal JSON data: %v", err)
 	}
 
-	// Создаем POST запрос на создание баннера
 	req, err := http.NewRequest("POST", "http://localhost:8000/banner", bytes.NewBuffer(jsonData))
 	if err != nil {
 		t.Fatalf("Failed to create POST request: %v", err)
 	}
 
-	// Добавляем токен аутентификации в заголовок запроса
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	// Отправляем POST запрос на создание баннера
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatalf("Failed to send POST request: %v", err)
@@ -168,7 +158,6 @@ func TestPostBanner(t *testing.T) {
 		t.Fatalf("Unexpected status code: %d", resp.StatusCode)
 	}
 
-	// Декодируем JSON-ответ, чтобы получить BannerId
 	var responseData struct {
 		BannerId int `json:"bannerId"`
 	}
@@ -176,16 +165,16 @@ func TestPostBanner(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to decode JSON response: %v", err)
 	}
+	// ------ POST BANNER END -------
 
 	fmt.Println("TestSignInAdmin - SUCCESS")
 	fmt.Println("TestPostBanner - SUCCESS")
-	// ------ POST BANNER END -------
+
 }
 
 func TestSignUpUser(t *testing.T) {
 	serverURL := "http://localhost:8000/auth/sign-up"
 
-	// Подготавливаем данные для отправки в формате JSON
 	inputData := map[string]string{
 		"username": "testUser",
 		"password": "testPassword",
@@ -195,19 +184,16 @@ func TestSignUpUser(t *testing.T) {
 		t.Fatalf("Failed to marshal JSON data: %v", err)
 	}
 
-	// Отправляем POST-запрос на сервер
 	resp, err := http.Post(serverURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		t.Fatalf("Failed to send POST request: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// Проверяем статус код ответа
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Unexpected status code: %d", resp.StatusCode)
 	}
 
-	// Парсим JSON-ответ
 	var responseData struct {
 		ID int `json:"id"`
 	}
@@ -216,7 +202,6 @@ func TestSignUpUser(t *testing.T) {
 		t.Fatalf("Failed to decode JSON response: %v", err)
 	}
 
-	// Печатаем ID пользователя
 	fmt.Println("TestSignUpUser -  SUCCESS")
 }
 
@@ -294,8 +279,8 @@ func TestGetUserBanner(t *testing.T) {
 	if banner != expectedBanner {
 		t.Fatalf("Unexpected banner data: %+v", banner)
 	}
+	// ------ GET USER BANNER START -------
 
 	fmt.Println("TestSignInUser - SUCCESS")
 	fmt.Println("TestGetUserBanner - SUCCESS")
-	// ------ GET USER BANNER START -------
 }
