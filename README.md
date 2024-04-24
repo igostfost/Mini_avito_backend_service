@@ -33,7 +33,7 @@ make run
 ```bash
 make migrate
 ```
-- Для удвления базы данных:
+- Для удаления базы данных:
 ```bash
 make migrate_down
 ```
